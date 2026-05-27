@@ -540,6 +540,18 @@ nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; backgro
       </div>
 
       <div class="card">
+        <div class="card-head"><div class="card-title">🔗 부부 연결 (실시간 공유)</div></div>
+        <p style="font-size:0.78rem; color:var(--muted); margin-bottom:10px;">두 폰에 <b>같은 코드</b>를 입력하면 쿠폰·자산·방명록 등이 실시간으로 공유돼요.</p>
+        <div style="display:flex; gap:6px;">
+          <input type="text" id="couple-code-input" class="input" placeholder="부부 공유 코드" autocomplete="off" style="margin-bottom:0;">
+          <button class="btn" onclick="genCoupleCode()" style="white-space:nowrap;">코드 생성</button>
+        </div>
+        <button class="btn btn-primary" onclick="saveCoupleCode()" style="width:100%; margin-top:8px;">저장 후 연결</button>
+        <div id="couple-sync-status" style="font-size:0.72rem; color:var(--muted); margin-top:8px;"></div>
+        <p style="font-size:0.68rem; color:var(--muted); margin-top:8px;">* 데이터가 많은 폰에서 <b>먼저</b> 연결하세요(상대 폰은 그 데이터를 받아옵니다). 코드를 아는 사람은 데이터를 볼 수 있으니 둘만 아는 값으로 정하세요.</p>
+      </div>
+
+      <div class="card">
         <div class="card-head"><div class="card-title">☁️ 백업 / 복원</div></div>
         <p style="font-size:0.78rem; color:var(--muted); margin-bottom:10px;">앱 데이터를 이메일이나 파일로 저장합니다.</p>
         <button class="btn" onclick="emailBackup()" style="width:100%; margin-bottom:6px;">📧 내 Gmail로 백업 전송</button>
@@ -579,11 +591,20 @@ nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; backgro
   <div class="toast" id="toast">알림</div>
 </div>
 
+<!-- Firebase (실시간 동기화) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
 <script>
 /* ============== 공통 ============== */
+// 부부 간 공유되는 데이터 키 (user/geminiKey/notif/coupleCode 등은 기기별이라 제외)
+const SYNC_KEYS = ['mood','ddays','coupons','tree','diaries','finance','assetHistory','savings','stocks','fridge','shopping','frequents','roulette','shareInfos','maints','docs','visited','counsels'];
 const LS = {
   get(k, d) { try { const v = localStorage.getItem('ygbb_'+k); return v === null ? d : JSON.parse(v); } catch { return d; } },
-  set(k, v) { localStorage.setItem('ygbb_'+k, JSON.stringify(v)); }
+  set(k, v) {
+    localStorage.setItem('ygbb_'+k, JSON.stringify(v));
+    if (window.cloudPush && !window._applyingRemote && SYNC_KEYS.includes(k)) window.cloudPush(k, v);
+  }
 };
 const koName = { wife: '👩‍🦱 아내', husband: '👨 남편' };
 let currentUser = LS.get('user', '');
@@ -1928,6 +1949,9 @@ function renderSettings() {
   if (gkInput) gkInput.value = gk;
   const gkStatus = document.getElementById('gemini-key-status');
   if (gkStatus) gkStatus.innerHTML = gk ? '✅ 키가 저장되어 있어요. AI 기능이 켜져 있습니다.' : '아직 키가 없어요. 입력 후 저장하면 AI 기능이 켜져요.';
+  const ccInput = document.getElementById('couple-code-input');
+  if (ccInput) ccInput.value = getCoupleCode();
+  syncStatusText();
 }
 function saveGeminiKey() {
   const v = document.getElementById('gemini-key-input').value.trim();
@@ -2032,6 +2056,108 @@ function initApp() {
   setupSavingSwipe(); setupDdaySwipe();
 }
 if (currentUser) initApp();
+
+/* ============== 부부 실시간 동기화 (Firebase) ============== */
+// ↓↓↓ 본인 Firebase 프로젝트 설정값을 여기에 붙여넣으세요 (설정법은 안내 참고) ↓↓↓
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCYYMoYK8C6ued0Y4b7H3DQ01J-u3skQPc",
+  authDomain: "ygbb-91c83.firebaseapp.com",
+  projectId: "ygbb-91c83",
+  storageBucket: "ygbb-91c83.firebasestorage.app",
+  messagingSenderId: "844393295612",
+  appId: "1:844393295612:web:4a06b0839e816b62efb179",
+  measurementId: "G-B6VTFZZEEW"
+};
+// ↑↑↑ projectId 등이 채워지면 동기화가 활성화됩니다 ↑↑↑
+let _db = null, _coupleRef = null, _unsub = null;
+const _pushTimers = {}, _pushQueue = {};
+window._applyingRemote = false;
+function getCoupleCode() { return (LS.get('coupleCode', '') || '').trim(); }
+function genCoupleCode() {
+  document.getElementById('couple-code-input').value = 'ygbb-' + Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 6);
+}
+function saveCoupleCode() {
+  const v = document.getElementById('couple-code-input').value.trim();
+  localStorage.setItem('ygbb_coupleCode', JSON.stringify(v));
+  toast(v ? '🔗 연결 코드 저장됨' : '코드를 비웠어요');
+  connectCouple();
+}
+function syncStatusText() {
+  const el = document.getElementById('couple-sync-status'); if (!el) return;
+  if (!FIREBASE_CONFIG.projectId) { el.innerHTML = '⚙️ 아직 동기화 서버가 설정되지 않았어요.'; return; }
+  if (typeof firebase === 'undefined' || !_db) { el.innerHTML = '⚠️ 동기화 라이브러리를 불러오지 못했어요 (인터넷 확인).'; return; }
+  const code = getCoupleCode();
+  if (!code) { el.innerHTML = '코드를 입력하고 [저장 후 연결]을 누르면 상대 폰과 연결돼요.'; return; }
+  el.innerHTML = `✅ 연결됨 · 코드 <b>${escapeHtml(code)}</b><br>상대 폰 설정에도 같은 코드를 넣어주세요.`;
+}
+function initSync() {
+  if (!FIREBASE_CONFIG.projectId || typeof firebase === 'undefined') { syncStatusText(); return; }
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    _db = firebase.firestore();
+  } catch (e) { _db = null; syncStatusText(); return; }
+  connectCouple();
+}
+function connectCouple() {
+  if (_unsub) { _unsub(); _unsub = null; }
+  syncStatusText();
+  const code = getCoupleCode();
+  if (!_db || !code) return;
+  _coupleRef = _db.collection('couples').doc(code);
+  _coupleRef.get().then(snap => {
+    if (!snap.exists) {
+      const init = {};
+      SYNC_KEYS.forEach(k => { const v = LS.get(k, null); if (v !== null) init[k] = v; });
+      _coupleRef.set(init, { merge: true }).catch(() => {});
+    }
+  }).catch(() => {});
+  _unsub = _coupleRef.onSnapshot(snap => {
+    const data = snap.data(); if (!data) return;
+    window._applyingRemote = true;
+    let changed = false;
+    SYNC_KEYS.forEach(k => {
+      if (data[k] === undefined) return;
+      const local = localStorage.getItem('ygbb_' + k);
+      const remote = JSON.stringify(data[k]);
+      if (local !== remote) { localStorage.setItem('ygbb_' + k, remote); changed = true; }
+    });
+    if (changed) reloadStateFromLS();
+    window._applyingRemote = false;
+  }, () => {});
+}
+window.cloudPush = function (key, val) {
+  if (!_coupleRef) return;
+  _pushQueue[key] = val;
+  clearTimeout(_pushTimers[key]);
+  _pushTimers[key] = setTimeout(() => {
+    const payload = {}; payload[key] = _pushQueue[key];
+    _coupleRef.set(payload, { merge: true }).catch(() => {});
+    delete _pushQueue[key];
+  }, 400);
+};
+function reloadStateFromLS() {
+  mood = LS.get('mood', mood);
+  ddays = LS.get('ddays', ddays);
+  coupons = LS.get('coupons', coupons);
+  tree = LS.get('tree', tree);
+  diaries = LS.get('diaries', diaries);
+  finance = LS.get('finance', finance);
+  assetHistory = LS.get('assetHistory', assetHistory);
+  savings = LS.get('savings', savings);
+  stocks = LS.get('stocks', stocks);
+  fridge = LS.get('fridge', fridge);
+  shopping = LS.get('shopping', shopping);
+  frequents = LS.get('frequents', frequents);
+  roulette = LS.get('roulette', roulette);
+  shareInfos = LS.get('shareInfos', shareInfos);
+  maints = LS.get('maints', maints);
+  docs = LS.get('docs', docs);
+  visited = LS.get('visited', visited);
+  counsels = LS.get('counsels', counsels);
+  if (currentUser) initApp();
+  if (document.getElementById('tab-asset-detail').classList.contains('active')) renderAssetDetail();
+}
+initSync();
 
 /* ============== PWA (서비스워커 등록) ============== */
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
