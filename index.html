@@ -294,7 +294,7 @@ nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; backgro
 <div id="app">
 
   <div id="splash">
-    <img src="Lunch_image.png" alt="여기봐봐">
+    <img src="splash.jpg" alt="여기봐봐">
     <div class="splash-title">💛 여기봐봐</div>
     <div class="splash-sub">우리 부부 라이프스타일 앱</div>
   </div>
@@ -310,7 +310,6 @@ nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; backgro
   <header>
     <h1>💛 여기봐봐</h1>
     <div class="header-right">
-      <div class="user-badge" id="user-badge" onclick="resetUser()">설정 변경</div>
       <button class="icon-btn" onclick="goSettings()" title="설정">⚙️</button>
     </div>
   </header>
@@ -585,6 +584,7 @@ nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; backgro
         <div class="card-head"><div class="card-title">👤 계정</div></div>
         <div id="google-account-info" style="font-size:0.85rem; padding: 8px 12px; background:#f8fafc; border-radius:10px; margin-bottom:10px; color:var(--muted);"></div>
         <button class="btn btn-primary" id="google-login-btn" style="width:100%;">Google 계정으로 로그인</button>
+        <button class="btn" onclick="resetUser()" style="width:100%; margin-top:8px;">👤 내 역할 다시 선택 (아내/남편)</button>
         <p style="font-size:0.68rem; color:var(--muted); margin-top:8px;">* 현재 데모 모드입니다. 실제 OAuth는 추후 연결 예정.</p>
       </div>
 
@@ -693,9 +693,9 @@ function copyText(text) {
 }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-function chooseUser(role) { currentUser = role; LS.set('user', role); document.getElementById('user-selector').style.display = 'none'; document.getElementById('user-badge').innerText = koName[role]; initApp(); }
-function resetUser() { document.getElementById('user-selector').style.display = 'flex'; }
-if (currentUser) { document.getElementById('user-selector').style.display = 'none'; document.getElementById('user-badge').innerText = koName[currentUser]; }
+function chooseUser(role) { currentUser = role; LS.set('user', role); document.getElementById('user-selector').style.display = 'none'; initApp(); }
+function resetUser() { closeModal(); document.getElementById('user-selector').style.display = 'flex'; }
+if (currentUser) { document.getElementById('user-selector').style.display = 'none'; }
 
 /* ============== 탭 ============== */
 const NAV_MAP = { asset: 0, house: 1, home: 2, share: 3, map: 4 };
