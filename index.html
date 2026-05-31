@@ -469,7 +469,7 @@ nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; backgro
       <div class="page-header">
         <button class="page-back" onclick="goBack('house')">← 뒤로</button>
         <h2 class="page-title">🛒 장바구니</h2>
-        <button class="add-btn" onclick="openFrequentModal()">⭐ 자주 사는 항목</button>
+        <button class="add-btn" onclick="openFrequentModal()">⭐ 자주</button>
       </div>
       <div class="shopping-total-card">
         <div>
@@ -477,6 +477,10 @@ nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; backgro
           <div style="font-size:0.7rem; opacity:0.8;" id="shopping-count-label">0개 항목</div>
         </div>
         <div class="shopping-total-amount" id="shopping-total">0원</div>
+      </div>
+      <div style="display:flex; gap:6px; margin-bottom:10px;">
+        <input type="text" id="shopping-quick-add" class="input" placeholder="장볼 항목 입력..." style="margin-bottom:0;" onkeydown="if(event.key==='Enter')addShoppingItem()">
+        <button class="btn btn-primary" onclick="addShoppingItem()" style="white-space:nowrap;">추가</button>
       </div>
       <div id="shopping-list-full"></div>
     </div>
@@ -1547,6 +1551,19 @@ function sendCheckedToFridge() {
   LS.set('shopping', shopping); renderShoppingBadge(); renderShoppingPage();
   toast(`🧊 ${chosen.length}개 냉장실로 이동`);
 }
+// 인라인 입력박스로 빠른 추가 (자주목록엔 저장 안 함)
+function addShoppingItem() {
+  const inp = document.getElementById('shopping-quick-add');
+  if (!inp) return;
+  const v = (inp.value || '').trim();
+  if (!v) { inp.focus(); return; }
+  shopping.push({ id: Date.now(), text: v, done: false, amount: 0 });
+  LS.set('shopping', shopping); renderShoppingBadge();
+  inp.value = '';
+  if (document.getElementById('tab-shopping').classList.contains('active')) renderShoppingPage();
+  inp.focus();
+}
+
 /* 자주 사는 항목 */
 let frequents = LS.get('frequents', [
   { id: 1, text: '우유' }, { id: 2, text: '계란' }, { id: 3, text: '식빵' }, { id: 4, text: '두부' }, { id: 5, text: '양파' }
@@ -1573,7 +1590,10 @@ function renderFrequentModal() {
 function addFrequent() {
   const inp = document.getElementById('freq-new'); const v = inp.value.trim();
   if (!v) return;
-  frequents.push({ id: Date.now(), text: v }); LS.set('frequents', frequents); renderFrequentModal();
+  const id = Date.now();
+  frequents.push({ id, text: v });
+  freqChecked[id] = true; // 새로 추가한 건 자동 체크 → 바로 [장바구니에 담기] 누르면 됨
+  LS.set('frequents', frequents); renderFrequentModal();
 }
 function toggleFreqCheck(id) { freqChecked[id] = !freqChecked[id]; renderFrequentModal(); }
 function deleteFrequent(id) { frequents = frequents.filter(f => f.id !== id); delete freqChecked[id]; LS.set('frequents', frequents); renderFrequentModal(); }
