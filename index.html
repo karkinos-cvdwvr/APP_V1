@@ -27,6 +27,12 @@ body { background: #e2e8f0; display: flex; justify-content: center; align-items:
 @media (min-width: 451px) { #app { height: 850px; border-radius: 40px; border: 8px solid #1a202c; } }
 ::-webkit-scrollbar { display: none; }
 
+#splash { position: absolute; inset: 0; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #fce7f3, #ede9fe); transition: opacity 0.5s ease; padding: 20px; }
+#splash img { width: 78%; max-width: 300px; border-radius: 28px; box-shadow: 0 12px 30px rgba(124, 58, 237, 0.25); }
+#splash .splash-title { margin-top: 22px; font-size: 1.4rem; font-weight: 900; color: #7c3aed; letter-spacing: -0.5px; }
+#splash .splash-sub { margin-top: 4px; font-size: 0.78rem; color: #a78bfa; font-weight: 600; }
+#splash.fade { opacity: 0; pointer-events: none; }
+
 #user-selector { position: absolute; inset: 0; background: var(--bg); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; }
 .select-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 30px; color: var(--text); text-align: center; }
 .select-row { display: flex; gap: 20px; width: 100%; }
@@ -174,8 +180,11 @@ header h1 { font-size: 1.2rem; font-weight: 800; color: var(--text); }
 .shopping-item-row .check { font-size: 1.05rem; cursor: pointer; user-select: none; }
 .shopping-item-row .text { flex: 1; font-size: 0.88rem; }
 .shopping-item-row .text.done { text-decoration: line-through; color: var(--muted); }
-.amount-input { width: 88px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.8rem; background: white; text-align: right; outline: none; font-family: inherit; }
+.amount-input { width: 68px; padding: 6px 6px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.8rem; background: white; text-align: right; outline: none; font-family: inherit; }
 .amount-input:focus { border-color: var(--primary); }
+.count-input { width: 40px; padding: 6px 4px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.8rem; background: white; text-align: center; outline: none; font-family: inherit; }
+.count-input:focus { border-color: var(--primary); }
+.shopping-item-row { gap: 5px; }
 
 /* 짠카 / 서류 */
 .maint-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 10px 12px; background: #f8fafc; border-radius: 10px; margin-bottom: 6px; border: 1px solid var(--border); align-items: center; cursor: pointer; }
@@ -255,12 +264,21 @@ nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; backgro
 .chart-legend span { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
 .chart-legend.off { opacity: 0.35; text-decoration: line-through; }
 
-/* 냉장고 드래그앤드롭 */
-.fridge-item { position: relative; touch-action: manipulation; user-select: none; }
-.fridge-item.drag-src { opacity: 0.3; }
-.fridge-sector.drag-over { border-color: var(--primary); background: #eef2ff; box-shadow: 0 0 0 2px var(--primary) inset; }
-.fridge-drag-clone { position: fixed; transform: translate(-50%, -50%); z-index: 3000; pointer-events: none; display: flex; align-items: center; gap: 6px; background: white; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--primary); box-shadow: 0 6px 18px rgba(0,0,0,0.25); font-size: 0.82rem; font-weight: 600; }
-.fridge-drag-clone .count-badge { background: #e2e8f0; color: var(--muted); font-size: 0.65rem; font-weight: bold; padding: 2px 8px; border-radius: 999px; }
+/* 냉장고 선택 모드 */
+.fridge-item { position: relative; touch-action: manipulation; user-select: none; transition: background 0.15s, color 0.15s, border-color 0.15s; }
+.fridge-item.selected { background: var(--primary); border-color: var(--primary); }
+.fridge-item.selected .name { color: white; }
+.fridge-item.selected .count-badge { background: rgba(255,255,255,0.25); color: white; }
+
+/* 살림 통합 페이지 상단 탭 */
+.storage-tabs { display: flex; background: var(--border); border-radius: 12px; padding: 4px; margin-bottom: 12px; }
+.storage-tab { flex: 1; text-align: center; padding: 10px 8px; border-radius: 9px; font-weight: bold; font-size: 0.9rem; background: transparent; border: none; cursor: pointer; color: var(--muted); }
+.storage-tab.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.06); }
+
+/* 마트 전단 */
+.flyer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+.flyer-chip { display: flex; align-items: center; justify-content: center; min-height: 56px; text-align: center; padding: 12px 10px; background: #f8fafc; border-radius: 12px; border: 1px solid var(--border); font-size: 0.88rem; font-weight: bold; color: var(--text); text-decoration: none; cursor: pointer; user-select: none; touch-action: manipulation; transition: transform 0.15s; }
+.flyer-chip:active { transform: scale(0.97); }
 
 /* 디데이 슬라이더 */
 .dday-slider-wrap { overflow: hidden; border-radius: 18px; touch-action: pan-y; margin-top: 12px; }
@@ -274,6 +292,12 @@ nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; backgro
 <body>
 
 <div id="app">
+
+  <div id="splash">
+    <img src="Lunch_image.png" alt="여기봐봐">
+    <div class="splash-title">💛 여기봐봐</div>
+    <div class="splash-sub">우리 부부 라이프스타일 앱</div>
+  </div>
 
   <div id="user-selector">
     <div class="select-title">💛 여기봐봐에 오신 걸 환영해요</div>
@@ -397,16 +421,22 @@ nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; backgro
 
     <!-- ===== 살림 ===== -->
     <div id="tab-house" class="tab">
-      <div class="quick-grid">
-        <div class="quick-card" onclick="openFridgeFull()">
-          <div class="quick-emoji">🧊</div>
-          <div class="quick-label">냉장고</div>
-          <div class="quick-sub" id="fridge-count">0개 보관</div>
+      <div class="card clickable" onclick="goStorage('fridge')">
+        <div class="card-head">
+          <div class="card-title">🧺 냉장고 / 장바구니</div>
+          <span style="font-size:0.7rem; color:var(--muted);">전체보기 ›</span>
         </div>
-        <div class="quick-card" onclick="goShopping()">
-          <div class="quick-emoji">🛒</div>
-          <div class="quick-label">장바구니</div>
-          <div class="quick-sub" id="shopping-count">0개 항목</div>
+        <div style="display:flex; gap:10px; margin-top:8px;">
+          <div onclick="event.stopPropagation();goStorage('fridge')" style="flex:1; cursor:pointer; text-align:center; padding:14px 8px; background:#f8fafc; border-radius:12px; border:1px solid var(--border);">
+            <div style="font-size:1.8rem; line-height:1;">🧊</div>
+            <div style="font-size:0.85rem; font-weight:bold; margin-top:6px;">냉장고</div>
+            <div style="font-size:0.7rem; color:var(--muted); margin-top:2px;" id="fridge-count">0종 보관</div>
+          </div>
+          <div onclick="event.stopPropagation();goStorage('shopping')" style="flex:1; cursor:pointer; text-align:center; padding:14px 8px; background:#f8fafc; border-radius:12px; border:1px solid var(--border);">
+            <div style="font-size:1.8rem; line-height:1;">🛒</div>
+            <div style="font-size:0.85rem; font-weight:bold; margin-top:6px;">장바구니</div>
+            <div style="font-size:0.7rem; color:var(--muted); margin-top:2px;" id="shopping-count">0개 항목</div>
+          </div>
         </div>
       </div>
 
@@ -425,6 +455,15 @@ nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; backgro
         </div>
         <div id="roulette-screen" class="roulette-screen">오늘은 누가 할까?</div>
         <button class="btn btn-primary" onclick="spinRoulette()" style="width:100%;">🎲 룰렛 돌리기</button>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">📰 마트 전단</div>
+          <button class="add-btn" onclick="openFlyerAdd()">+ 추가</button>
+        </div>
+        <p style="font-size:0.7rem; color:var(--muted); margin-bottom:8px;">카드를 누르면 새 탭에서 열려요. <b>꾹 누르면 삭제</b>.</p>
+        <div class="flyer-grid" id="flyer-grid"></div>
       </div>
     </div>
 
@@ -464,25 +503,43 @@ nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; backgro
       </div>
     </div>
 
-    <!-- ===== 장바구니 페이지 ===== -->
-    <div id="tab-shopping" class="tab full-page">
+    <!-- ===== 살림 통합 페이지 (냉장고 + 장바구니) ===== -->
+    <div id="tab-storage" class="tab full-page">
       <div class="page-header">
         <button class="page-back" onclick="goBack('house')">← 뒤로</button>
-        <h2 class="page-title">🛒 장바구니</h2>
-        <button class="add-btn" onclick="openFrequentModal()">⭐ 자주</button>
+        <h2 class="page-title">🧺 살림</h2>
+        <div style="width:40px;"></div>
       </div>
-      <div class="shopping-total-card">
-        <div>
-          <div class="shopping-total-label">총 합계</div>
-          <div style="font-size:0.7rem; opacity:0.8;" id="shopping-count-label">0개 항목</div>
+      <div class="storage-tabs">
+        <button class="storage-tab" id="storage-tab-fridge" onclick="switchStorageView('fridge')">🧊 냉장고</button>
+        <button class="storage-tab" id="storage-tab-shopping" onclick="switchStorageView('shopping')">🛒 장바구니</button>
+      </div>
+
+      <!-- 냉장고 뷰 -->
+      <div id="storage-view-fridge" style="display:none;">
+        <div style="font-size:0.68rem; color:var(--muted); margin-bottom:8px; line-height:1.5;">💡 재료를 <b>꾹 누르면</b> 선택 모드로 바뀝니다. 다른 항목도 눌러 같이 선택 → 한 번에 다른 칸으로 이동. <b>빠르게 두 번</b> 누르면 한 개만 삭제.</div>
+        <div id="fridge-select-bar"></div>
+        <div id="fridge-sectors-box"></div>
+      </div>
+
+      <!-- 장바구니 뷰 -->
+      <div id="storage-view-shopping" style="display:none;">
+        <div class="shopping-total-card">
+          <div>
+            <div class="shopping-total-label">총 합계</div>
+            <div style="font-size:0.7rem; opacity:0.8;" id="shopping-count-label">0개 항목</div>
+          </div>
+          <div class="shopping-total-amount" id="shopping-total">0원</div>
         </div>
-        <div class="shopping-total-amount" id="shopping-total">0원</div>
+        <div style="display:flex; gap:6px; margin-bottom:10px;">
+          <input type="text" id="shopping-quick-add" class="input" placeholder="장볼 항목 입력..." style="margin-bottom:0;" onkeydown="if(event.key==='Enter')addShoppingItem()">
+          <button class="btn btn-primary" onclick="addShoppingItem()" style="white-space:nowrap;">추가</button>
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+          <button class="add-btn" onclick="openFrequentModal()">⭐ 자주 사는 항목</button>
+        </div>
+        <div id="shopping-list-full"></div>
       </div>
-      <div style="display:flex; gap:6px; margin-bottom:10px;">
-        <input type="text" id="shopping-quick-add" class="input" placeholder="장볼 항목 입력..." style="margin-bottom:0;" onkeydown="if(event.key==='Enter')addShoppingItem()">
-        <button class="btn btn-primary" onclick="addShoppingItem()" style="white-space:nowrap;">추가</button>
-      </div>
-      <div id="shopping-list-full"></div>
     </div>
 
     <!-- ===== 공동 자산 전체보기 페이지 ===== -->
@@ -566,11 +623,13 @@ nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; backgro
 
       <div class="card">
         <div class="card-head"><div class="card-title">🔔 알림 설정</div></div>
-        <div class="info-row"><div>D-Day 임박 알림</div><label class="toggle"><input type="checkbox" id="notif-dday"><span class="toggle-slider"></span></label></div>
-        <div class="info-row"><div>짠카 관리일 알림</div><label class="toggle"><input type="checkbox" id="notif-maint"><span class="toggle-slider"></span></label></div>
-        <div class="info-row"><div>식비 80% 초과 알림</div><label class="toggle"><input type="checkbox" id="notif-budget"><span class="toggle-slider"></span></label></div>
-        <div class="info-row"><div>새 쿠폰 도착 알림</div><label class="toggle"><input type="checkbox" id="notif-coupon"><span class="toggle-slider"></span></label></div>
-        <p style="font-size:0.7rem; color:var(--muted); margin-top:8px;">* 갤럭시 폰 알림은 PWA 설치 후 정식 지원됩니다.</p>
+        <button class="btn btn-primary" onclick="requestNotifyPermission()" style="width:100%; margin-bottom:10px;">🔔 알림 권한 켜기</button>
+        <div class="info-row"><div>📅 D-Day 임박 알림 (3일 이내)</div><label class="toggle"><input type="checkbox" id="notif-dday"><span class="toggle-slider"></span></label></div>
+        <div class="info-row"><div>🚗 짠카 관리일 알림 (7일 이내)</div><label class="toggle"><input type="checkbox" id="notif-maint"><span class="toggle-slider"></span></label></div>
+        <div class="info-row"><div>💸 식비 80% 초과 알림</div><label class="toggle"><input type="checkbox" id="notif-budget"><span class="toggle-slider"></span></label></div>
+        <div class="info-row"><div>🎟️ 새 쿠폰 도착 알림</div><label class="toggle"><input type="checkbox" id="notif-coupon"><span class="toggle-slider"></span></label></div>
+        <div class="info-row"><div>📖 방명록 작성 알림</div><label class="toggle"><input type="checkbox" id="notif-diary"><span class="toggle-slider"></span></label></div>
+        <p style="font-size:0.7rem; color:var(--muted); margin-top:8px;">* 알림은 앱이 열려 있을 때 동작합니다 (백그라운드 푸시는 추후 작업).</p>
       </div>
 
       <div class="card">
@@ -600,9 +659,15 @@ nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; backgro
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <script>
+/* ============== 스플래시 ============== */
+setTimeout(() => {
+  const s = document.getElementById('splash');
+  if (s) { s.classList.add('fade'); setTimeout(() => s.remove(), 600); }
+}, 1600);
+
 /* ============== 공통 ============== */
 // 부부 간 공유되는 데이터 키 (user/geminiKey/notif/coupleCode 등은 기기별이라 제외)
-const SYNC_KEYS = ['mood','ddays','coupons','tree','diaries','finance','assetHistory','savings','stocks','fridge','shopping','frequents','roulette','shareInfos','maints','docs','visited','counsels'];
+const SYNC_KEYS = ['mood','ddays','coupons','tree','nicks','diaries','finance','assetHistory','savings','stocks','fridge','shopping','frequents','roulette','shareInfos','maints','docs','visited','counsels','flyers'];
 const LS = {
   get(k, d) { try { const v = localStorage.getItem('ygbb_'+k); return v === null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) {
@@ -642,11 +707,6 @@ function switchTab(id, el) {
   else if (NAV_MAP[id] !== undefined) document.querySelectorAll('.nav-item')[NAV_MAP[id]].classList.add('active');
 }
 function goBack(toTab) { switchTab(toTab); }
-function goShopping() {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-shopping').classList.add('active');
-  renderShoppingPage();
-}
 function goSettings() {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-settings').classList.add('active');
@@ -822,12 +882,13 @@ let tree = LS.get('tree', {
   husband: { goal: '치킨 사주기', reward: '아내가 용돈 주기', penalty: '주말 빨래 담당', items: [] }
 });
 Object.keys(tree).forEach(r => { if (!('penalty' in tree[r])) tree[r].penalty = '미설정'; });
+let nicks = LS.get('nicks', { wife: '아내', husband: '남편' });
 
 function renderTreeSummary() {
   const cnt = (r, t) => tree[r].items.filter(i => i.type === t).length;
   document.getElementById('tree-summary').innerHTML =
-    `<span class="${currentUser==='wife'?'me':''}">👩‍🦱 👍🏻 ${cnt('wife','praise')}　💥 ${cnt('wife','penalty')}</span>
-     <span class="${currentUser==='husband'?'me':''}">👨 👍🏻 ${cnt('husband','praise')}　💥 ${cnt('husband','penalty')}</span>`;
+    `<span class="${currentUser==='wife'?'me':''}">${escapeHtml(nicks.wife)} 👍🏻 ${cnt('wife','praise')}　💥 ${cnt('wife','penalty')}</span>
+     <span class="${currentUser==='husband'?'me':''}">${escapeHtml(nicks.husband)} 👍🏻 ${cnt('husband','praise')}　💥 ${cnt('husband','penalty')}</span>`;
 }
 function openTreeModal(role) {
   const d = tree[role]; const isMine = role === currentUser;
@@ -835,11 +896,11 @@ function openTreeModal(role) {
   d.items.forEach(s => { stickers += `<div class="sticker" style="left:${s.x}%; top:${s.y}%;" onclick="openStickerInfo('${role}', ${s.id})">${s.type==='praise'?'👍🏻':'💥'}</div>`; });
   openModal(`
     <div class="modal-tabs">
-      <div class="modal-tab ${role==='wife'?'active':''}" onclick="openTreeModal('wife')">👩‍🦱 아내</div>
-      <div class="modal-tab ${role==='husband'?'active':''}" onclick="openTreeModal('husband')">👨 남편</div>
+      <div class="modal-tab ${role==='wife'?'active':''}" onclick="openTreeModal('wife')">${escapeHtml(nicks.wife)}</div>
+      <div class="modal-tab ${role==='husband'?'active':''}" onclick="openTreeModal('husband')">${escapeHtml(nicks.husband)}</div>
     </div>
+    <div style="text-align:right; margin:-4px 0 8px;"><button class="add-btn" onclick="editNicks('${role}')">✏️ 별명 수정</button></div>
     <div class="goal-box" onclick="editGoal('${role}')">
-      <div class="goal-row"><span class="goal-label">🎯 목표</span><span>${escapeHtml(d.goal || '미설정')}</span></div>
       <div class="goal-row"><span class="goal-label">🎁 보상 (잘했어요)</span><span>${escapeHtml(d.reward || '미설정')}</span></div>
       <div class="goal-row"><span class="goal-label danger">💥 벌칙 (못했어요)</span><span>${escapeHtml(d.penalty || '미설정')}</span></div>
       <div style="font-size:0.68rem; color:var(--muted); text-align:right; margin-top:4px;">${isMine ? '터치해서 수정' : '본인만 수정 가능'}</div>
@@ -851,12 +912,21 @@ function openTreeModal(role) {
     </div>
     <div class="modal-foot"><button class="btn" onclick="closeModal()" style="width:100%;">닫기</button></div>`);
 }
+function editNicks(currentRole) {
+  const w = prompt('👩 아내 별명', nicks.wife); if (w === null) return;
+  const h = prompt('👨 남편 별명', nicks.husband); if (h === null) return;
+  nicks.wife = (w || '').trim() || '아내';
+  nicks.husband = (h || '').trim() || '남편';
+  LS.set('nicks', nicks);
+  renderTreeSummary();
+  openTreeModal(currentRole);
+  toast('별명 저장됨');
+}
 function editGoal(role) {
   if (role !== currentUser) { toast('⚠️ 본인 나무만 수정 가능해요'); return; }
-  const g = prompt('🎯 이번 달 목표', tree[role].goal); if (g === null) return;
   const r = prompt('🎁 잘했어요 달성 시 보상', tree[role].reward); if (r === null) return;
   const p = prompt('💥 못했어요 누적 시 벌칙', tree[role].penalty); if (p === null) return;
-  tree[role].goal = g; tree[role].reward = r; tree[role].penalty = p;
+  tree[role].reward = r; tree[role].penalty = p;
   LS.set('tree', tree); openTreeModal(role); toast('저장됨');
 }
 function addSticker(role, type) {
@@ -876,7 +946,7 @@ function openStickerInfo(role, id) {
   const s = tree[role].items.find(x => x.id === id);
   if (!s) return;
   const canDelete = role !== currentUser;
-  const owner = role === 'wife' ? '아내' : '남편';
+  const owner = nicks[role] || (role === 'wife' ? '아내' : '남편');
   openModal(`<div class="modal-head">${s.type === 'praise' ? '👍🏻 잘했어요' : '💥 못했어요'}</div>
     <div style="background:#f8fafc; padding:14px; border-radius:12px; font-size:0.9rem; line-height:1.5; margin-bottom:10px;">${escapeHtml(s.reason)}</div>
     <div style="font-size:0.72rem; color:var(--muted); margin-bottom:14px;">대상: ${owner}의 나무</div>
@@ -1358,126 +1428,176 @@ let fridge = LS.get('fridge', { '냉장실': [{ name: '계란', count: 10 }, { n
 if (Array.isArray(fridge)) { fridge = { '냉장실': fridge.map(n => ({ name: n, count: 1 })), '냉동실': [], '양념칸': [], '간식칸': [] }; LS.set('fridge', fridge); }
 function totalFridgeCount() { let n = 0; FRIDGE_SECTORS.forEach(s => n += (fridge[s] || []).length); return n; }
 function renderFridgeBadge() { document.getElementById('fridge-count').innerText = `${totalFridgeCount()}종 보관`; }
-function openFridgeFull() {
-  let h = `<div class="modal-head"><span>🧊 우리집 냉장고</span><button class="btn" onclick="closeModal()" style="padding:5px 12px; font-size:0.78rem;">닫기</button></div>
-    <div style="font-size:0.68rem; color:var(--muted); margin-bottom:10px; line-height:1.5;">💡 재료를 <b>꾹 눌러</b> 다른 칸으로 끌어다 옮기고, <b>빠르게 두 번</b> 누르면 삭제돼요.</div>
-    <div class="fridge-sectors">`;
+// 아이템 id 마이그레이션 (선택 모드용 안정 식별자)
+(function migrateFridgeIds() {
+  let dirty = false;
+  FRIDGE_SECTORS.forEach(s => {
+    if (!Array.isArray(fridge[s])) return;
+    fridge[s].forEach((it, i) => {
+      if (!it.id) { it.id = Date.now() + i + Math.floor(Math.random() * 10000); dirty = true; }
+    });
+  });
+  if (dirty) LS.set('fridge', fridge);
+})();
+
+/* ===== 살림 통합 페이지 (냉장고 + 장바구니) ===== */
+let storageView = 'fridge';
+function goStorage(view) {
+  storageView = view || 'fridge';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-storage').classList.add('active');
+  switchStorageView(storageView);
+}
+function switchStorageView(v) {
+  storageView = v;
+  document.getElementById('storage-tab-fridge').classList.toggle('active', v === 'fridge');
+  document.getElementById('storage-tab-shopping').classList.toggle('active', v === 'shopping');
+  document.getElementById('storage-view-fridge').style.display = v === 'fridge' ? '' : 'none';
+  document.getElementById('storage-view-shopping').style.display = v === 'shopping' ? '' : 'none';
+  if (v === 'fridge') renderFridgePage();
+  else renderShoppingPage();
+}
+
+/* ===== 냉장고 (페이지 내 렌더링 + 선택 모드) ===== */
+let fridgeSelectMode = false;
+let fridgeSelected = new Set();
+function renderFridgePage() {
+  const selBar = document.getElementById('fridge-select-bar');
+  if (fridgeSelectMode) {
+    selBar.innerHTML = `<div style="background:#eef2ff; border:1px solid var(--primary); border-radius:12px; padding:10px; margin-bottom:10px;">
+      <div style="font-size:0.78rem; font-weight:bold; color:var(--primary); margin-bottom:8px;">✅ 선택 ${fridgeSelected.size}개 · 이동 / 삭제</div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        ${FRIDGE_SECTORS.map(s => `<button class="btn" style="padding:7px 10px; font-size:0.78rem;" onclick="moveSelectedToSector('${s}')">${FRIDGE_EMOJI[s]} ${s}</button>`).join('')}
+        <button class="btn btn-danger" style="padding:7px 10px; font-size:0.78rem;" onclick="deleteSelected()">🗑 삭제</button>
+        <button class="btn" style="padding:7px 10px; font-size:0.78rem;" onclick="exitSelectMode()">✕ 취소</button>
+      </div>
+    </div>`;
+  } else {
+    selBar.innerHTML = '';
+  }
+  const box = document.getElementById('fridge-sectors-box');
+  let h = '<div class="fridge-sectors">';
   FRIDGE_SECTORS.forEach(s => {
     const items = fridge[s] || [];
     h += `<div class="fridge-sector" data-sector="${s}">
       <div class="fridge-sector-head">
         <div class="fridge-sector-title">${FRIDGE_EMOJI[s]} ${s} <span style="font-size:0.7rem; color:var(--muted); font-weight:normal;">(${items.length})</span></div>
-        <button class="add-btn" onclick="addFridgeItem('${s}')">+ 추가</button>
+        ${fridgeSelectMode ? '' : `<button class="add-btn" onclick="addFridgeItem('${s}')">+ 추가</button>`}
       </div>
       <div class="fridge-items">
-        ${items.length === 0 ? '<div style="color:var(--muted); font-size:0.78rem; padding:4px;">비어있음</div>' : items.map((it, idx) =>
-          `<div class="fridge-item" data-sector="${s}" data-idx="${idx}"><span class="name">${escapeHtml(it.name)}</span><span class="count-badge">${it.count}</span><button class="del-x" onclick="event.stopPropagation();changeFridgeCount('${s}',${idx},-1)">−</button><button class="del-x" onclick="event.stopPropagation();changeFridgeCount('${s}',${idx},1)">+</button></div>`
+        ${items.length === 0 ? '<div style="color:var(--muted); font-size:0.78rem; padding:4px;">비어있음</div>' : items.map(it =>
+          `<div class="fridge-item ${fridgeSelected.has(String(it.id)) ? 'selected' : ''}" data-sector="${s}" data-id="${it.id}"><span class="name">${escapeHtml(it.name)}</span><span class="count-badge">${it.count}</span>${fridgeSelectMode ? '' : `<button class="del-x" onclick="event.stopPropagation();changeFridgeCountById('${s}',${it.id},-1)">−</button><button class="del-x" onclick="event.stopPropagation();changeFridgeCountById('${s}',${it.id},1)">+</button>`}</div>`
         ).join('')}
       </div>
     </div>`;
   });
   h += '</div>';
-  openModal(h, true);
+  box.innerHTML = h;
   setupFridgeInteractions();
 }
 function addFridgeItem(sector) {
   const name = prompt(`[${sector}] 재료 이름`); if (!name || !name.trim()) return;
   const c = prompt('수량 (숫자만)', '1');
   if (!fridge[sector]) fridge[sector] = [];
-  fridge[sector].push({ name: name.trim(), count: parseInt(c) || 1 });
-  LS.set('fridge', fridge); renderFridgeBadge(); openFridgeFull();
+  fridge[sector].push({ id: Date.now(), name: name.trim(), count: parseInt(c) || 1 });
+  LS.set('fridge', fridge); renderFridgeBadge(); renderFridgePage();
 }
-function changeFridgeCount(sector, idx, delta) {
-  const it = fridge[sector][idx];
-  it.count = Math.max(0, it.count + delta);
-  if (it.count === 0) fridge[sector].splice(idx, 1);
-  LS.set('fridge', fridge); renderFridgeBadge(); openFridgeFull();
+function changeFridgeCountById(sector, id, delta) {
+  const arr = fridge[sector] || [];
+  const idx = arr.findIndex(x => String(x.id) === String(id));
+  if (idx < 0) return;
+  arr[idx].count = Math.max(0, arr[idx].count + delta);
+  if (arr[idx].count === 0) arr.splice(idx, 1);
+  LS.set('fridge', fridge); renderFridgeBadge(); renderFridgePage();
 }
-function removeFridgeItem(sector, idx) { fridge[sector].splice(idx, 1); LS.set('fridge', fridge); renderFridgeBadge(); openFridgeFull(); }
-function moveFridgeItem(fromSector, idx, toSector) {
-  const arr = fridge[fromSector];
-  if (!arr || !arr[idx]) return;
-  const it = arr.splice(idx, 1)[0];
-  if (!fridge[toSector]) fridge[toSector] = [];
-  const existing = fridge[toSector].find(x => x.name === it.name);
-  if (existing) existing.count += it.count; else fridge[toSector].push(it);
-  LS.set('fridge', fridge); renderFridgeBadge(); openFridgeFull();
-  toast(`📦 ${it.name} → ${toSector}`);
-}
-function confirmDeleteFridge(sector, idx) {
-  const it = fridge[sector] && fridge[sector][idx];
+function confirmDeleteFridge(sector, id) {
+  const it = (fridge[sector] || []).find(x => String(x.id) === String(id));
   if (!it) return;
   if (confirm(`'${it.name}'을(를) 삭제할까요?`)) {
-    fridge[sector].splice(idx, 1);
-    LS.set('fridge', fridge); renderFridgeBadge(); openFridgeFull();
+    fridge[sector] = fridge[sector].filter(x => String(x.id) !== String(id));
+    LS.set('fridge', fridge); renderFridgeBadge(); renderFridgePage();
   }
 }
-/* 꾹눌러 드래그앤드롭 + 더블탭 삭제 */
+function moveSelectedToSector(destSector) {
+  if (fridgeSelected.size === 0) return;
+  const moved = [];
+  FRIDGE_SECTORS.forEach(s => {
+    fridge[s] = (fridge[s] || []).filter(it => {
+      if (fridgeSelected.has(String(it.id))) { moved.push(it); return false; }
+      return true;
+    });
+  });
+  if (!moved.length) { exitSelectMode(); return; }
+  if (!fridge[destSector]) fridge[destSector] = [];
+  moved.forEach(it => {
+    const ex = fridge[destSector].find(x => x.name === it.name);
+    if (ex) ex.count += it.count; else fridge[destSector].push({ id: it.id, name: it.name, count: it.count });
+  });
+  LS.set('fridge', fridge); renderFridgeBadge();
+  exitSelectMode();
+  toast(`📦 ${moved.length}개 → ${destSector}`);
+}
+function deleteSelected() {
+  if (fridgeSelected.size === 0) return;
+  if (!confirm(`선택한 ${fridgeSelected.size}개를 삭제할까요?`)) return;
+  FRIDGE_SECTORS.forEach(s => {
+    fridge[s] = (fridge[s] || []).filter(it => !fridgeSelected.has(String(it.id)));
+  });
+  LS.set('fridge', fridge); renderFridgeBadge();
+  exitSelectMode();
+}
+function exitSelectMode() {
+  fridgeSelectMode = false; fridgeSelected = new Set();
+  renderFridgePage();
+}
+
+/* 꾹눌러 선택 모드 + 더블탭 삭제 */
 let fdrag = null;
 let fridgeTap = { time: 0, key: '' };
 function setupFridgeInteractions() {
-  document.querySelectorAll('#modal-body .fridge-item').forEach(el => {
-    el.addEventListener('touchstart', fridgeTouchStart, { passive: false });
+  document.querySelectorAll('#storage-view-fridge .fridge-item').forEach(el => {
+    el.addEventListener('touchstart', fridgeTouchStart, { passive: true });
     el.addEventListener('mousedown', fridgeMouseStart);
   });
 }
 function fridgeBeginPress(el, x, y) {
-  const sector = el.dataset.sector;
-  const idx = parseInt(el.dataset.idx);
-  const key = sector + ':' + idx;
-  const now = Date.now();
-  if (now - fridgeTap.time < 350 && fridgeTap.key === key) {
-    fridgeTap = { time: 0, key: '' };
-    fdrag = null;
-    confirmDeleteFridge(sector, idx);
-    return;
-  }
-  fridgeTap = { time: now, key };
-  fdrag = { el, sector, idx, startX: x, startY: y, moved: false, active: false, clone: null,
-            timer: setTimeout(fridgeActivateDrag, 420) };
+  fdrag = { el, id: String(el.dataset.id), sector: el.dataset.sector, startX: x, startY: y, moved: false, longPressed: false,
+            timer: setTimeout(fridgeLongPress, 420) };
 }
-function fridgeActivateDrag() {
+function fridgeLongPress() {
   if (!fdrag || fdrag.moved) return;
-  const it = fridge[fdrag.sector] && fridge[fdrag.sector][fdrag.idx];
-  if (!it) return;
-  fdrag.active = true;
-  fdrag.el.classList.add('drag-src');
-  const clone = document.createElement('div');
-  clone.className = 'fridge-drag-clone';
-  clone.innerHTML = `<span class="name">${escapeHtml(it.name)}</span><span class="count-badge">${it.count}</span>`;
-  clone.style.left = fdrag.startX + 'px';
-  clone.style.top = fdrag.startY + 'px';
-  document.body.appendChild(clone);
-  fdrag.clone = clone;
+  fdrag.longPressed = true;
+  if (!fridgeSelectMode) { fridgeSelectMode = true; fridgeSelected = new Set(); }
+  fridgeSelected.add(fdrag.id);
   if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
+  renderFridgePage();
 }
-function fridgeMove(x, y, ev) {
+function fridgeMoveCheck(x, y) {
   if (!fdrag) return;
-  if (!fdrag.active) {
-    if (Math.abs(x - fdrag.startX) > 8 || Math.abs(y - fdrag.startY) > 8) { fdrag.moved = true; clearTimeout(fdrag.timer); }
-    return;
+  if (Math.abs(x - fdrag.startX) > 8 || Math.abs(y - fdrag.startY) > 8) {
+    fdrag.moved = true;
+    clearTimeout(fdrag.timer);
   }
-  if (ev && ev.cancelable) ev.preventDefault();
-  fdrag.clone.style.left = x + 'px';
-  fdrag.clone.style.top = y + 'px';
-  const el = document.elementFromPoint(x, y);
-  const sec = el && el.closest('.fridge-sector');
-  document.querySelectorAll('#modal-body .fridge-sector').forEach(s => s.classList.toggle('drag-over', s === sec));
 }
-function fridgeEnd(x, y) {
+function fridgeEndCheck() {
   if (!fdrag) return;
   clearTimeout(fdrag.timer);
-  if (fdrag.active) {
-    const el = (x != null) ? document.elementFromPoint(x, y) : null;
-    const sec = el && el.closest('.fridge-sector');
-    const dest = sec && sec.dataset.sector;
-    if (fdrag.clone) fdrag.clone.remove();
-    document.querySelectorAll('#modal-body .fridge-sector').forEach(s => s.classList.remove('drag-over'));
-    const from = fdrag.sector, idx = fdrag.idx;
-    fdrag = null;
-    if (dest && dest !== from) moveFridgeItem(from, idx, dest);
-    else openFridgeFull();
-    return;
+  if (!fdrag.longPressed && !fdrag.moved) {
+    const id = fdrag.id;
+    if (fridgeSelectMode) {
+      if (fridgeSelected.has(id)) fridgeSelected.delete(id);
+      else fridgeSelected.add(id);
+      if (fridgeSelected.size === 0) exitSelectMode();
+      else renderFridgePage();
+    } else {
+      const now = Date.now();
+      if (now - fridgeTap.time < 350 && fridgeTap.key === id) {
+        fridgeTap = { time: 0, key: '' };
+        confirmDeleteFridge(fdrag.sector, id);
+      } else {
+        fridgeTap = { time: now, key: id };
+      }
+    }
   }
   fdrag = null;
 }
@@ -1485,21 +1605,20 @@ function fridgeTouchStart(e) {
   if (e.target.closest('button')) return;
   const t = e.touches[0];
   fridgeBeginPress(e.currentTarget, t.clientX, t.clientY);
-  const mv = ev => { const tt = ev.touches[0]; if (tt) fridgeMove(tt.clientX, tt.clientY, ev); };
-  const end = ev => {
-    const ct = (ev.changedTouches && ev.changedTouches[0]) || {};
-    fridgeEnd(ct.clientX, ct.clientY);
+  const mv = ev => { const tt = ev.touches[0]; if (tt) fridgeMoveCheck(tt.clientX, tt.clientY); };
+  const end = () => {
+    fridgeEndCheck();
     document.removeEventListener('touchmove', mv); document.removeEventListener('touchend', end); document.removeEventListener('touchcancel', end);
   };
-  document.addEventListener('touchmove', mv, { passive: false });
+  document.addEventListener('touchmove', mv, { passive: true });
   document.addEventListener('touchend', end);
   document.addEventListener('touchcancel', end);
 }
 function fridgeMouseStart(e) {
   if (e.target.closest('button')) return;
   fridgeBeginPress(e.currentTarget, e.clientX, e.clientY);
-  const mv = ev => fridgeMove(ev.clientX, ev.clientY, ev);
-  const up = ev => { fridgeEnd(ev.clientX, ev.clientY); document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+  const mv = ev => fridgeMoveCheck(ev.clientX, ev.clientY);
+  const up = () => { fridgeEndCheck(); document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
   document.addEventListener('mousemove', mv);
   document.addEventListener('mouseup', up);
 }
@@ -1510,22 +1629,27 @@ if (shopping.length > 0 && typeof shopping[0] === 'string') {
   shopping = shopping.map((t, i) => ({ id: Date.now()+i, text: t, done: false, amount: 0 }));
   LS.set('shopping', shopping);
 }
-shopping.forEach(s => { if (typeof s.amount === 'undefined') s.amount = 0; });
+shopping.forEach(s => { if (typeof s.amount === 'undefined') s.amount = 0; if (typeof s.count === 'undefined') s.count = 1; });
 
 function renderShoppingBadge() { document.getElementById('shopping-count').innerText = `${shopping.length}개 항목`; }
+function shoppingTotal() {
+  return shopping.reduce((a, s) => a + (Number(s.amount) || 0) * Math.max(1, Number(s.count) || 1), 0);
+}
 function renderShoppingPage() {
-  const total = shopping.reduce((a, s) => a + (Number(s.amount) || 0), 0);
+  const total = shoppingTotal();
   const checked = shopping.filter(s => s.done).length;
   document.getElementById('shopping-total').innerText = total.toLocaleString() + '원';
   document.getElementById('shopping-count-label').innerText = `${shopping.length}개 항목${checked ? ` · 선택 ${checked}` : ''}`;
   const box = document.getElementById('shopping-list-full');
-  if (shopping.length === 0) { box.innerHTML = '<div class="empty">⭐ 자주 사는 항목에서 담아보세요</div>'; return; }
+  if (shopping.length === 0) { box.innerHTML = '<div class="empty">위에서 항목을 추가해보세요 ✏️</div>'; return; }
   const list = shopping.map(s =>
     `<div class="shopping-item-row" style="${s.done ? 'opacity:0.6;' : ''}">
       <span class="check" onclick="toggleShopping(${s.id})">${s.done ? '✅' : '⬜'}</span>
       <span class="text ${s.done ? 'done' : ''}">${escapeHtml(s.text)}</span>
-      <input type="number" class="amount-input" placeholder="0" value="${s.amount||''}" inputmode="numeric" onchange="setShoppingAmount(${s.id}, this.value)">
-      <span style="font-size:0.7rem; color:var(--muted);">원</span>
+      <input type="number" class="count-input" value="${s.count||1}" min="1" inputmode="numeric" onchange="setShoppingCount(${s.id}, this.value)" title="갯수">
+      <span style="font-size:0.65rem; color:var(--muted);">개</span>
+      <input type="number" class="amount-input" placeholder="단가" value="${s.amount||''}" inputmode="numeric" onchange="setShoppingAmount(${s.id}, this.value)" title="단가(1개)">
+      <span style="font-size:0.65rem; color:var(--muted);">원</span>
       <button class="del" onclick="removeShoppingItem(${s.id})" style="background:none; border:none; cursor:pointer; color:var(--muted);">🗑</button>
     </div>`
   ).join('');
@@ -1537,14 +1661,16 @@ function toggleShopping(id) {
   const s = shopping.find(x => x.id === id);
   if (s) { s.done = !s.done; LS.set('shopping', shopping); renderShoppingPage(); }
 }
-// 체크한 항목을 한 번에 냉장실로 이동
+// 체크한 항목을 한 번에 냉장실로 이동 (갯수도 그대로 이동)
 function sendCheckedToFridge() {
   const chosen = shopping.filter(s => s.done);
   if (chosen.length === 0) { toast('⚠️ 보낼 항목을 체크하세요'); return; }
   if (!fridge['냉장실']) fridge['냉장실'] = [];
-  chosen.forEach(s => {
+  chosen.forEach((s, i) => {
+    const qty = Math.max(1, Number(s.count) || 1);
     const ex = fridge['냉장실'].find(x => x.name === s.text);
-    if (ex) ex.count += 1; else fridge['냉장실'].push({ name: s.text, count: 1 });
+    if (ex) ex.count += qty;
+    else fridge['냉장실'].push({ id: Date.now() + i, name: s.text, count: qty });
   });
   LS.set('fridge', fridge); renderFridgeBadge();
   shopping = shopping.filter(s => !s.done);
@@ -1557,10 +1683,10 @@ function addShoppingItem() {
   if (!inp) return;
   const v = (inp.value || '').trim();
   if (!v) { inp.focus(); return; }
-  shopping.push({ id: Date.now(), text: v, done: false, amount: 0 });
+  shopping.unshift({ id: Date.now(), text: v, done: false, amount: 0, count: 1 });
   LS.set('shopping', shopping); renderShoppingBadge();
   inp.value = '';
-  if (document.getElementById('tab-shopping').classList.contains('active')) renderShoppingPage();
+  if (document.getElementById('tab-storage').classList.contains('active') && storageView === 'shopping') renderShoppingPage();
   inp.focus();
 }
 
@@ -1600,22 +1726,30 @@ function deleteFrequent(id) { frequents = frequents.filter(f => f.id !== id); de
 function addCheckedToCart() {
   const chosen = frequents.filter(f => freqChecked[f.id]);
   if (chosen.length === 0) { toast('⚠️ 항목을 선택하세요'); return; }
-  let added = 0;
+  const newItems = [];
   chosen.forEach((f, i) => {
-    if (!shopping.some(s => s.text === f.text)) { shopping.push({ id: Date.now() + i, text: f.text, done: false, amount: 0 }); added++; }
+    if (!shopping.some(s => s.text === f.text)) newItems.push({ id: Date.now() + i, text: f.text, done: false, amount: 0, count: 1 });
   });
+  shopping = newItems.concat(shopping); // 새 항목들을 맨 위로
   LS.set('shopping', shopping); renderShoppingBadge();
-  if (document.getElementById('tab-shopping').classList.contains('active')) renderShoppingPage();
+  if (document.getElementById('tab-storage').classList.contains('active') && storageView === 'shopping') renderShoppingPage();
   closeModal();
-  toast(added ? `🛒 ${added}개 담았어요` : '이미 장바구니에 있어요');
+  toast(newItems.length ? `🛒 ${newItems.length}개 담았어요` : '이미 장바구니에 있어요');
 }
 function setShoppingAmount(id, v) {
   const s = shopping.find(x => x.id === id);
   if (s) {
     s.amount = Number(v) || 0;
     LS.set('shopping', shopping);
-    const total = shopping.reduce((a, x) => a + (Number(x.amount) || 0), 0);
-    document.getElementById('shopping-total').innerText = total.toLocaleString() + '원';
+    document.getElementById('shopping-total').innerText = shoppingTotal().toLocaleString() + '원';
+  }
+}
+function setShoppingCount(id, v) {
+  const s = shopping.find(x => x.id === id);
+  if (s) {
+    s.count = Math.max(1, Number(v) || 1);
+    LS.set('shopping', shopping);
+    document.getElementById('shopping-total').innerText = shoppingTotal().toLocaleString() + '원';
   }
 }
 function removeShoppingItem(id) {
@@ -1932,6 +2066,67 @@ function deleteDoc(id) {
   LS.set('docs', docs); renderDocs(); closeModal();
 }
 
+/* ============== 마트 전단 ============== */
+let flyers = LS.get('flyers', []);
+function renderFlyers() {
+  const box = document.getElementById('flyer-grid');
+  if (!box) return;
+  if (flyers.length === 0) {
+    box.innerHTML = '<div class="empty" style="grid-column:1/3;">자주 가는 마트 전단 링크를 추가해보세요</div>';
+    return;
+  }
+  box.innerHTML = flyers.map(f =>
+    `<a class="flyer-chip" href="${escapeHtml(f.url)}" target="_blank" rel="noopener" data-id="${f.id}">${escapeHtml(f.title)}</a>`
+  ).join('');
+  setupFlyerLongPress();
+}
+function openFlyerAdd() {
+  openModal(`<div class="modal-head">📰 마트 전단 추가</div>
+    <input type="text" id="flyer-title" class="input" placeholder="마트 이름 (예: 이마트)">
+    <input type="url" id="flyer-url" class="input" placeholder="https://... (전단 페이지 주소)">
+    <p style="font-size:0.68rem; color:var(--muted); margin-bottom:10px;">* 카드엔 마트 이름만 표시되고, 누르면 새 탭으로 열려요.</p>
+    <div class="modal-foot"><button class="btn" onclick="closeModal()">취소</button><button class="btn btn-primary" onclick="saveFlyer()">저장</button></div>`);
+}
+function saveFlyer() {
+  const title = document.getElementById('flyer-title').value.trim();
+  let url = document.getElementById('flyer-url').value.trim();
+  if (!title) { toast('⚠️ 마트 이름을 입력하세요'); return; }
+  if (!url) { toast('⚠️ 링크를 입력하세요'); return; }
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  flyers.push({ id: Date.now(), title, url });
+  LS.set('flyers', flyers); renderFlyers(); closeModal(); toast('📰 추가됨');
+}
+function deleteFlyer(id) {
+  const f = flyers.find(x => x.id === id);
+  if (!f) return;
+  if (!confirm(`'${f.title}' 링크를 삭제할까요?`)) return;
+  flyers = flyers.filter(x => x.id !== id);
+  LS.set('flyers', flyers); renderFlyers();
+}
+function setupFlyerLongPress() {
+  document.querySelectorAll('#flyer-grid .flyer-chip').forEach(el => {
+    if (el.dataset.lpAttached) return;
+    el.dataset.lpAttached = '1';
+    let timer = null, longPressed = false;
+    const start = (x, y) => {
+      longPressed = false;
+      timer = setTimeout(() => {
+        longPressed = true;
+        deleteFlyer(Number(el.dataset.id));
+      }, 600);
+    };
+    const cancel = () => { clearTimeout(timer); };
+    el.addEventListener('touchstart', e => start(), { passive: true });
+    el.addEventListener('touchmove', cancel, { passive: true });
+    el.addEventListener('touchend', cancel);
+    el.addEventListener('touchcancel', cancel);
+    el.addEventListener('mousedown', e => start());
+    el.addEventListener('mouseup', cancel);
+    el.addEventListener('mouseleave', cancel);
+    el.addEventListener('click', e => { if (longPressed) { e.preventDefault(); e.stopPropagation(); } });
+  });
+}
+
 /* ============== 발도장 ============== */
 const regions = ['서울','경기','인천','강원','충북','충남','대전','세종','전북','전남','광주','경북','경남','대구','울산','부산','제주'];
 let visited = LS.get('visited', { '제주': true });
@@ -1958,8 +2153,8 @@ function renderSettings() {
     btn.onclick = googleLogin;
     btn.className = 'btn btn-primary';
   }
-  const notif = LS.get('notif', { dday: false, maint: false, budget: false, coupon: false });
-  ['dday','maint','budget','coupon'].forEach(k => {
+  const notif = LS.get('notif', { dday: false, maint: false, budget: false, coupon: false, diary: false });
+  ['dday','maint','budget','coupon','diary'].forEach(k => {
     const el = document.getElementById('notif-'+k);
     el.checked = !!notif[k];
     el.onchange = e => saveNotif(k, e.target.checked);
@@ -2002,6 +2197,98 @@ function saveNotif(k, v) {
   const n = LS.get('notif', {}); n[k] = v; LS.set('notif', n);
   toast(v ? `🔔 ${k} 알림 켜짐` : `🔕 ${k} 알림 꺼짐`);
 }
+
+/* ===== 알림 트리거 (브라우저 Notification) ===== */
+function notify(title, body) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'granted') return;
+  try { new Notification(title, { body, icon: 'icon-192.png' }); } catch (e) {}
+}
+async function requestNotifyPermission() {
+  if (!('Notification' in window)) { toast('이 기기는 알림 미지원'); return; }
+  if (Notification.permission === 'granted') { toast('✅ 이미 허용됨'); return; }
+  if (Notification.permission === 'denied') { toast('⚠️ 브라우저 설정에서 허용해주세요'); return; }
+  const p = await Notification.requestPermission();
+  if (p === 'granted') toast('🔔 알림 허용됨');
+  else toast('알림 권한 거부됨');
+}
+function getNotifPref(k) { return !!(LS.get('notif', {}) || {})[k]; }
+function nowDateStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function nowMonthStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+function maxId(arr) { return arr.reduce((m, x) => Math.max(m, Number(x.id)||0), 0); }
+
+function checkCouponNotif() {
+  if (!getNotifPref('coupon') || !currentUser) return;
+  const mine = coupons.filter(c => c.to === currentUser && !c.used);
+  const maxNow = maxId(mine);
+  const lastSeen = LS.get('lastSeenCoupon', 0);
+  if (lastSeen === 0) { LS.set('lastSeenCoupon', maxNow); return; }
+  if (maxNow > lastSeen) {
+    const fresh = mine.filter(c => Number(c.id) > lastSeen);
+    fresh.forEach(c => notify('🎟️ 새 쿠폰 도착', `"${c.title}"`));
+    LS.set('lastSeenCoupon', maxNow);
+  }
+}
+function checkDiaryNotif() {
+  if (!getNotifPref('diary') || !currentUser) return;
+  const others = diaries.filter(d => d.user !== currentUser);
+  const maxNow = maxId(others);
+  const lastSeen = LS.get('lastSeenDiary', 0);
+  if (lastSeen === 0) { LS.set('lastSeenDiary', maxNow); return; }
+  if (maxNow > lastSeen) {
+    const fresh = others.filter(d => Number(d.id) > lastSeen);
+    const latest = fresh[fresh.length - 1];
+    const partnerName = currentUser === 'wife' ? '남편' : '아내';
+    notify('📖 방명록 새 글', `${partnerName}: ${latest.text.slice(0, 40)}`);
+    LS.set('lastSeenDiary', maxNow);
+  }
+}
+function checkBudgetNotif() {
+  if (!getNotifPref('budget')) return;
+  const spent = budgetSpentSum(), goal = budgetGoalSum();
+  if (!goal) return;
+  const pct = spent / goal * 100;
+  if (pct < 80) return;
+  const cur = nowMonthStr();
+  if (LS.get('budgetAlertedMonth', '') === cur) return;
+  notify('💸 식비 알림', `이번 달 식비 ${Math.round(pct)}% 사용했어요`);
+  LS.set('budgetAlertedMonth', cur);
+}
+function checkDdayNotif() {
+  if (!getNotifPref('dday')) return;
+  const today = nowDateStr();
+  const alerted = LS.get('ddayAlertLog', {});
+  ddays.forEach(d => {
+    const t = new Date(d.date); t.setHours(0,0,0,0);
+    const now = new Date(); now.setHours(0,0,0,0);
+    const diff = Math.ceil((t - now) / 86400000);
+    if (diff < 0 || diff > 3) return;
+    if (alerted[d.id] === today) return;
+    notify('📅 디데이 임박', `${d.icon} ${d.label} ${diff === 0 ? 'D-Day 🎉' : 'D-' + diff}`);
+    alerted[d.id] = today;
+  });
+  LS.set('ddayAlertLog', alerted);
+}
+function checkMaintNotif() {
+  if (!getNotifPref('maint') || typeof calcNextDate !== 'function') return;
+  const today = nowDateStr();
+  const alerted = LS.get('maintAlertLog', {});
+  maints.forEach(m => {
+    const nx = calcNextDate(m.lastDate, m.cycle, m.unit);
+    if (nx === '-') return;
+    const t = new Date(nx); t.setHours(0,0,0,0);
+    const now = new Date(); now.setHours(0,0,0,0);
+    const diff = Math.ceil((t - now) / 86400000);
+    if (diff < 0 || diff > 7) return;
+    if (alerted[m.id] === today) return;
+    notify('🚗 짠카 관리', `${m.title}: ${diff === 0 ? '오늘' : 'D-' + diff}`);
+    alerted[m.id] = today;
+  });
+  LS.set('maintAlertLog', alerted);
+}
+function checkAllNotifs() {
+  try { checkCouponNotif(); checkDiaryNotif(); checkBudgetNotif(); checkDdayNotif(); checkMaintNotif(); } catch (e) {}
+}
 function googleLogin() {
   const email = prompt('Gmail 주소를 입력하세요 (데모)');
   if (!email) return;
@@ -2016,7 +2303,7 @@ function googleLogout() {
   renderSettings();
 }
 function collectBackupData() {
-  const keys = ['user','mood','ddays','coupons','tree','diaries','finance','assetHistory','savings','stocks','fridge','shopping','frequents','roulette','shareInfos','maints','docs','visited','counsels','notif','googleAccount'];
+  const keys = ['user','mood','ddays','coupons','tree','nicks','diaries','finance','assetHistory','savings','stocks','fridge','shopping','frequents','roulette','shareInfos','maints','docs','visited','counsels','flyers','notif','googleAccount'];
   const data = { _exportedAt: new Date().toISOString(), _version: 1, _app: 'YGBB' };
   keys.forEach(k => { data[k] = LS.get(k, null); });
   return data;
@@ -2073,7 +2360,9 @@ function initApp() {
   renderFinance(); renderSavings(); renderStocks();
   renderFridgeBadge(); renderShoppingBadge(); renderRouletteStats();
   renderShareInfo(); renderMaints(); renderDocs(); renderMap();
+  renderFlyers();
   setupSavingSwipe(); setupDdaySwipe();
+  checkAllNotifs();
 }
 if (currentUser) initApp();
 
@@ -2160,6 +2449,7 @@ function reloadStateFromLS() {
   ddays = LS.get('ddays', ddays);
   coupons = LS.get('coupons', coupons);
   tree = LS.get('tree', tree);
+  nicks = LS.get('nicks', nicks);
   diaries = LS.get('diaries', diaries);
   finance = LS.get('finance', finance);
   assetHistory = LS.get('assetHistory', assetHistory);
@@ -2174,8 +2464,13 @@ function reloadStateFromLS() {
   docs = LS.get('docs', docs);
   visited = LS.get('visited', visited);
   counsels = LS.get('counsels', counsels);
+  flyers = LS.get('flyers', flyers);
   if (currentUser) initApp();
   if (document.getElementById('tab-asset-detail').classList.contains('active')) renderAssetDetail();
+  if (document.getElementById('tab-storage').classList.contains('active')) {
+    if (storageView === 'fridge') renderFridgePage();
+    else renderShoppingPage();
+  }
 }
 initSync();
 

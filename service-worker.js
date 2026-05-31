@@ -1,5 +1,5 @@
 /* 여기봐봐 (YGBB) 서비스워커 — 오프라인 캐시 */
-const CACHE = 'ygbb-v1';
+const CACHE = 'ygbb-v2';
 const ASSETS = [
   './',
   './index.html',
